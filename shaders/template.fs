@@ -1,23 +1,16 @@
 #version 330 core
 
-uniform sampler2D tex_2d;
 uniform vec4 color;
+uniform vec3 background;
 
-in vec3 vert_col;
-in vec2 vert_tex;
+in float fragSide;
 
 out vec4 out_col;
 
 void main() {
-        // Y-координата у формата jpg перевернута относительно OpenGL
-        vec4 texel = texture(tex_2d, vec2(vert_tex.x, 1.0 - vert_tex.y));
-
-        // https://ru.wikipedia.org/wiki/Оттенки_серого
-        float greyscale_factor = dot(texel.rgb, vec3(0.21, 0.71, 0.07));
-        vec3 semi_greyscale = mix(vec3(greyscale_factor), vert_col.rgb, 0.7f);
-
-        // Анимированный цвет из uniform
-        vec3 animated_color = mix(color.rgb, semi_greyscale, 0.7f);
+        float d = abs(fragSide);
+        float glow = pow(1.0 - d, 2.0);
+        vec3 animated_color = mix(background, color.rgb, glow);
 
         out_col = vec4(animated_color, 1.0);
 }

@@ -1,19 +1,24 @@
 #pragma once
 
-#include "openglwidget.h"
-
 #include <QElapsedTimer>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
 #include <QOpenGLVertexArrayObject>
-#include <QWindow>
+#include <QPointF>
+#include <QVector3D>
 
-class Window : public OpenGLWidget
-{
+#include "openglwidget.h"
+
+class QLabel;
+class QMouseEvent;
+class QSlider;
+class QWidget;
+class QWheelEvent;
+
+class Window : public OpenGLWidget {
     Q_OBJECT
 
-public:
+   public:
     Window();
     ~Window();
 
@@ -21,24 +26,43 @@ public:
     void onRender() override;
     void onResize(size_t width, size_t height) override;
 
-private:
+   protected:
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
+
+   private:
+    QPointF screenToWorld(const QPointF& position) const;
+
     QElapsedTimer timer_;
     GLint colorUniform_ = -1;
-    float hue_ = 0;
+    GLint backgroundUniform_ = -1;
+    float phase_ = 0.0;
 
     GLint mvpUniform_ = -1;
 
-    QMatrix4x4 model_;
-    QMatrix4x4 view_;
     QMatrix4x4 projection_;
 
     QOpenGLBuffer vbo_{QOpenGLBuffer::Type::VertexBuffer};
-    QOpenGLBuffer ibo_{QOpenGLBuffer::Type::IndexBuffer};
     QOpenGLVertexArrayObject vao_;
-
-    std::unique_ptr<QOpenGLTexture> texture_;
     std::unique_ptr<QOpenGLShaderProgram> program_;
+    const int ATTRS_ = 3;
+    const QVector3D BACKGROUND_ = {0.14f, 0.07f, 0.16f};
 
-    bool animated_ = true;
-    bool сolorAnimated_ = animated_;
+    bool animated_ = false;
+
+    QWidget* controlsPanel_ = nullptr;
+    QSlider* iterSlider_ = nullptr;
+    QLabel* iterValueLabel_ = nullptr;
+    QPointF lastMousePosition_;
+
+    int iter_ = 1;
+    const int LENGTH_ = 3;
+    const float rectWidth_ = LENGTH_ / 12.0;
+
+    float centerX_ = 0.0;
+    float centerY_ = 0.0;
+    float viewHeight_ = 16.0;
+    bool dragging_ = false;
 };
